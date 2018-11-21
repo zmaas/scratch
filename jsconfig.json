@@ -5,10 +5,11 @@
 				"noEmit": true,
 				"checkJs": true,
 				"jsx": "react",
-
 				"lib": [ "dom", "es2017" ]
 		},
 		"include": [
 				"./network/"
+				"./freecodecamp/"
+				"./eloquent_js/"
 		]
 }
