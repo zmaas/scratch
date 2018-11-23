@@ -37,6 +37,43 @@ function	reverseArrayInPlace(arr) {
 console.log(reverseArray(["A", "B", "C"]));
 console.log(reverseArrayInPlace(["A", "B", "C"]));
 
+// Just check equality by converting JSON to a string and comparing
+// that.
 function deepEqual(a, b) {
-
+		if (JSON.stringify(a) == JSON.stringify(b)) {
+				return true;
+		}
+		return false;
 }
+
+let arrays = [[1, 2, 3], [4, 5], [6]];
+
+function flatten(arr) {
+		return arr.reduce((a, b) => a.concat(b));
+}
+
+console.log(flatten(arrays));
+
+function	loop(val, test, update, body) {
+		let	i = val;
+		while	(test(i)) {
+				body(i);
+				i = update(i);
+		}
+}
+
+loop(3, n => n > 0, n => n - 1, console.log);
+
+function every (array, test) {
+		console.log(array);
+		// Empty case
+		if (array.length < 1) {
+				return true;
+		}
+		// Not empty
+		return array.reduce((a, b) => test(a) && test(b));
+}
+
+console.log(every([1, 3, 5], n => n < 10));
+console.log(every([2, 4, 16], n => n < 10));
+console.log(every([], n => n < 10));
