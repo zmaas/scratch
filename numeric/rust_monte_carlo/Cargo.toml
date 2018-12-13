@@ -1,0 +1,8 @@
+[package]
+name = "rust_monte_carlo"
+version = "0.1.0"
+authors = ["Zach Maas <zach.maas@gmail.com>"]
+
+[dependencies]
+rand = "0.5.5"
+rayon = "1.0.3"

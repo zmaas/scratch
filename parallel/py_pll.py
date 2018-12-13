@@ -1,7 +1,6 @@
 """Example of using python multiprocessing pools"""
 
 import multiprocessing as mp
-import time
 
 def map_worker(num):
     """Just return the input
@@ -11,7 +10,7 @@ def map_worker(num):
     :rtype:
 
     """
-    return(num)
+    return num
 
 def map_handler():
     """Trivial handler for multiprocessing

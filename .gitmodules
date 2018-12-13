@@ -1,0 +1,6 @@
+[submodule "lispy/ascii_art"]
+	path = lispy/ascii_art
+	url = ./lispy/ascii_art/
+[submodule "numeric/rust_monte_carlo"]
+	path = numeric/rust_monte_carlo
+	url = ./numeric/rust_monte_carlo/
