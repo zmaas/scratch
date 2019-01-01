@@ -1,28 +1,43 @@
 ;;; Trivial	Memoized Factorial Function
 
-(ql:quickload :sb-posix)
+(declaim (optimize (speed 3) (safety 0))
+				 (ftype (function (fixnum) integer) fac)
+				 (ftype (function (fixnum) fixnum) fib))
 
-(defun fac-h (n cache)
-	"Memoized factorial helper using hash table cache. Takes N, an
-integer, and CACHE, a hash table. Implements a recursive definition.
+(defparameter *fac-cache* (make-hash-table))
+(defparameter *fib-cache* (make-hash-table))
 
-Usage: (fac-h 10 cache) => 3628800"
-	(declare (optimize (speed 3))
-					 (type fixnum n))
+(defun fac (n)
+	"Memoized factorial helper using hash table *fac-cache*. Takes N, an
+integer, and *FAC-CACHE*, a global hash table. Implements a recursive
+definition of the factorial which is memoized to optimize performance
+on subsequent runs.
+
+Usage: (fac 10) => 3628800"
+	(declare (type fixnum n))
 	(cond
-		((gethash n cache))
+		((gethash n *fac-cache*))
 		((< n 2) 1)
 		(t
 		 (let ((v (* n (fac (- n 1)))))
-			 (setf (gethash n cache) v)
+			 (setf (gethash n *fac-cache*) v)
 			 v))))
 
-(defun fac (n)
-	"Memoized factorial function, using a local hash table. Most of the
-overhead in this function comes from creating the local hash table."
-	(let ((cache (make-hash-table)))
-		(fac-h n cache)))
+(defun fib (n)
+	"Memoized fibonacci sequence helper using hash table *fib-cache*. Takes N, an
+integer, and *FIB-CACHE*, a global hash table. Implements a recursive
+definition of the fibonacci sequence which is memoized to optimize performance
+on subsequent runs.
+
+Usage: (fib 10) => 89"
+	(declare (type fixnum n))
+	(cond
+		((gethash n *fib-cache*))
+		((< n 2) 1)
+		(t
+		 (let ((v (+ (fib (- n 1)) (fib (- n 2)))))
+			 (setf (gethash n *fib-cache*) v)
+			 v))))
 
 (defun main ()
-	(print (fac 10000))
-	(sb-posix:exit 0))
+	(time (fac 10000)))
