@@ -2,7 +2,7 @@
 
 from keras.datasets import reuters
 from keras.utils.np_utils import to_categorical
-rom xgboost import XGBRegressor
+from xgboost import XGBRegressor
 import numpy as np
 
 (train_data, train_labels), (test_data,

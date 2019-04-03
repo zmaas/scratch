@@ -4,7 +4,7 @@
 (defvar *0* '())
 
 ;; A simple implementation of the successor operation to construct our
-;; arithmetic
+;; arithmetic.
 (defun S (x)
 	"The successor operation is defined as S(x) = x U {x}"
 	(declare (type list x))
@@ -34,3 +34,8 @@ below zero"
 	(if (eq x nil)
 			nil
 			(car x)))
+
+;; (defun plus (x y)
+;; 	)
+
+(gen-peano-up-to 10)

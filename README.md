@@ -8,3 +8,5 @@ straightforward manner, and all code is MIT Licensed.
 ## TODO
 
 [] Add better documentation for each subfolder.
+[] Discuss a Declaration of the Independence of Cyberspace
+[] Contribute to GNU Code, File GNU CLA.
