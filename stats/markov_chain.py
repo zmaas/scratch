@@ -1,11 +1,13 @@
 # Toy Markov Chain
 
-import asyncio as aio
+import attr
+from attr.validators import instance_of
 from numpy import isclose
 import random
 import string
 
 
+@attr.s
 class MarkovChain:
     """Markov chain class implemented using a dictionary of dictionaries.
     We don't use a matrix because when dealing with text we expect the
@@ -13,10 +15,13 @@ class MarkovChain:
     space advantage here, and roughly O(1) access time for actually
     generating text from the model.
     """
-    transitionMatrix = {}
-    curr_state = 0
+
     # Number of previous words to consider. 2 to 3 seems to be the sweet spot
-    sequence_length = 3
+    sequence_length = attr.ib(validator=instance_of(int))
+
+    # Private members
+    _transition_matrix = attr.ib(default={}, validator=instance_of(dict))
+    _curr_state = attr.ib(default=0)
 
     def construct_model(self, filename):
         """Take in a plain text (ideally a utf8 file) and generate a markov
@@ -34,8 +39,8 @@ class MarkovChain:
             full_text = corpus.read().translate(
                 str.maketrans('', '', string.punctuation)).lower().split()
             # Calculate bigrams and indices
-            n = self.sequence_length
-            ngrams = zip(*[full_text[i:] for i in range(n)])
+            num_terms = self.sequence_length
+            ngrams = zip(*[full_text[i:] for i in range(num_terms)])
             ngramlist = [" ".join(ngram) for ngram in ngrams]
             # Use a generator comprehension here for performance on large input
             ngrampairs = ((x, y) for x, y in zip(ngramlist, ngramlist[1:]))
@@ -54,29 +59,29 @@ class MarkovChain:
             for item in T:
                 total = sum(T[item].values())
                 T[item] = {k: v / total for k, v in T[item].items()}
-            self.transitionMatrix = T
-            self.curr_state = random.choice(list(self.transitionMatrix.keys()))
+            self._transition_matrix = T
+            self.randomize_state()
 
     def randomize_state(self):
         """Randomize the model's state, used  after a sentence is generated."""
-        self.curr_state = random.choice(list(self.transitionMatrix.keys()))
+        self._curr_state = random.sample(self._transition_matrix.keys(), 1)[0]
 
     def transition(self):
         """Iterate the state of the markov chain."""
         guess = random.random()
-        if self.curr_state in self.transitionMatrix:
-            for key, prob in self.transitionMatrix[self.curr_state].items():
+        if self._curr_state in self._transition_matrix:
+            for key, prob in self._transition_matrix[self._curr_state].items():
                 guess -= prob
                 if guess <= 0:
-                    self.curr_state = key
+                    self._curr_state = key
                     break
         else:
             self.randomize_state()
 
     def verify_markov_chain(self):
         """Set the transition matrix with property verification."""
-        for j in self.transitionMatrix:
-            k = sum(self.transitionMatrix[j].values())
+        for j in self._transition_matrix:
+            k = sum(self._transition_matrix[j].values())
             passes_p = isclose(k, 1) or isclose(k, 0)
         return passes_p
 
@@ -91,14 +96,14 @@ class TextGenerator(MarkovChain):
     sentence_max_length = 20
     punctuation_choices = [".", ".", ".", ".", "!"]
 
-    async def describe(self):
+    def describe(self):
         """Describe the current state of the model and the properties. This
         will also verify that the generated model is Markov, which can take
         some time for larger models.
         """
         print("TextGenerator Object based on a Markov Chain")
-        print("Model states: ", len(self.transitionMatrix))
-        print("Current state:", self.curr_state)
+        print("Model states: ", len(self._transition_matrix))
+        print("Current state:", self._curr_state)
         if self.debug:
             print("[Debug] Running Tests...")
             passes_tests = self.verify_markov_chain()
@@ -113,9 +118,9 @@ class TextGenerator(MarkovChain):
         state and returning the new state.
         """
         self.transition()
-        return self.curr_state
+        return self._curr_state
 
-    async def generate_sentence(self, num_words):
+    def generate_sentence(self, num_words):
         """Generate a sentence consisting of num_words many words, with the
         first letter capitalized and randomized punctuation at the end.
         """
@@ -123,30 +128,33 @@ class TextGenerator(MarkovChain):
         for _ in range(num_words):
             sentence.append(self.generate_word().split()[-1])
         self.randomize_state()
-        return " ".join(sentence) + random.choice(self.punctuation_choices)
+        return " ".join(sentence) + random.sample(self.punctuation_choices,
+                                                  1)[0]
 
-    async def generate_paragraph(self, num_sentences):
+    def generate_paragraph(self, num_sentences):
         """Generate a string of num_sentences many sentences, constructed
         using the generate_sentence method from above.
         """
         state = []
         for _ in range(num_sentences):
-            state.append(await self.generate_sentence(
-                random.randint(self.sentence_min_length,
-                               self.sentence_max_length)))
+            state.append(
+                self.generate_sentence(
+                    random.randint(self.sentence_min_length,
+                                   self.sentence_max_length)))
         return ' '.join(state)
 
 
 # Generate the model.
-async def main():
-    corpus_file = "mobydick.txt"
-    g = TextGenerator()
+def main():
+    # corpus_file = "mobydick.txt"
+    corpus_file = "merge.txt"
+    g = TextGenerator(sequence_length=3)
     g.construct_model(corpus_file)
     # g.describe()
     output = ""
-    for _ in range(10):
-        output += await g.generate_paragraph(random.randint(7, 20))
-    print(output)
+    for _ in range(5):
+        output = g.generate_paragraph(random.randint(7, 20))
+        print(output)
 
 
-aio.run(main())
+main()
